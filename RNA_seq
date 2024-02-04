@@ -15,9 +15,6 @@ multiqc /media/newdrive/GCB2024/sallyowens/FYP/raw_fastq/FastQC
 # Genome indices had already been generated using the following code
 # STAR --runThreadN 32 --runMode genomeGenerate --genomeDir /media/newdrive/data/Reference_genomes/Human/UCSC/STAR --genomeFastaFiles /media/newdrive/data/Reference_genomes/Human/UCSC/hg38.fa --sjdbGTFfile /media/newdrive/data/Reference_genomes/Human/UCSC/hg38.ncbiRefSeq.gtf --sjdbOverhang 149
 
-# General code to align reads
-# STAR --genomeDir /media/newdrive/data/Reference_genomes/Human/UCSC/STAR_UCSC_refseq/ --runThreadN 12 --readFilesIn S1_1.fq.gz S1_2.fq.gz --readFilesCommand zcat --outFileNamePrefix S1 --outSAMtype BAM SortedByCoordinate --outSAMunmapped Within --outSAMattributes Standard 
-
 # this outputs files ending in _1.fq.gz, _2.fq.gz and the file with the same name, to check input files before running alignment 
 for i in *_1.fq.gz; do
 echo 
@@ -28,6 +25,12 @@ echo
 done
 
 # To test a loop to align all fastq files within a directory, dry run of STAR alignemnt step
+# --genomeDir specifies the path to the directory where the genome indices are stored 
+# --readFilesIn speciefies the name(s) (with path if not in the current working directory) of the fastq files containing the sequences to be mapped
+# --readFilesCommand zcat specifies how fastq files are compressed, zcat indicates that they are gzipped.
+# --outFileNamePrefix specifies the prefix name to give to all output files
+# --outSAMtype specifies the nature of the output alignment file in this case we want a bam file, BAM SortedByCoordinate
+# --outSAMunmapped specified what to do with unmapped reads. --outSAMunmapped Within means unmapped reads will be output into the SAM/BAM Aligned.* file(s)
 for i in *_1.fq.gz; do
 echo STAR --genomeDir /media/newdrive/data/Reference_genomes/Human/UCSC/STAR_UCSC_refseq/ --runThreadN 12 --readFilesIn $i ${i%_1.fq.gz}_2.fq.gz --readFilesCommand zcat --outFileNamePrefix ${i%_1.fq.gz} --outSAMtype BAM SortedByCoordinate --outSAMunmapped Within --outSAMattributes Standard
 done
@@ -38,3 +41,107 @@ done
 nohup sh -c 'for i in *_1.fq.gz; do
 STAR --genomeDir /media/newdrive/data/Reference_genomes/Human/UCSC/STAR_UCSC_refseq/ --runThreadN 12 --readFilesIn $i ${i%_1.fq.gz}_2.fq.gz --readFilesCommand zcat --outFileNamePrefix ${i%_1.fq.gz} --outSAMtype BAM SortedByCoordinate --outSAMunmapped Within --outSAMattributes Standard
 done' &
+
+# Move bams and related files to a new directory and create a multiqc summary
+mkdir -p ~/FYP/coordinate_sorted_bams
+mv *.out* ~/FYP/coordinate_sorted_bams/
+cd ~/FYP/coordinate_sorted_bams
+multiqc ~/FYP/coordinate_sorted_bams -n STAR_multiqc
+
+# view header only of one of the bam files, -H shows the header section only. Useful for seeing informaiton regading the sequence, the reference genome and alignment.
+samtools view -H RNA_S1Aligned.sortedByCoord.out.bam
+
+# view mapping section only of bam file. Pipe the output to a less command to keep it one screen at a time and to the width of the screen only as it is easier to view.
+# alignment section will show the read name, the flag, the chromosome the read maps to and its position, the mapping quality (255 is maximum for star), the CIGAR string, mapping information on the second read and the sequence of the read
+samtools view RNA_S1Aligned.sortedByCoord.out.bam | less -S
+
+# view header and mapping section of sam file, -h is to view both header and alignment sections.
+samtools view -h RNA_S1Aligned.sortedByCoord.out.bam | less -S
+
+# count number of alignments
+samtools view -c RNA_S1Aligned.sortedByCoord.out.bam #does the same thing as previous command
+
+# samtools index
+# bam files need to be indexed for a variety of downstream tools
+# need to be in coordinate_sorted_bams directory for this to work
+pwd # to check
+
+# index bam files (generate bai)
+# -@ specify number of threads to use
+for i in *Aligned.sortedByCoord.out.bam; do
+samtools index $i -@ 12
+done
+
+# RSeQC for Human data
+# Make an rseqc directory and infer_experiment directory within it
+
+mkdir -p ~/FYP/coordinate_sorted_bam/rseqc/infer_experiment
+
+# Infer whether strand-specific RNA-seq data was performed: Only need to check this for one bam file
+for i in *Aligned.sortedByCoord.out.bam; do
+infer_experiment.py -r /media/newdrive/data/Reference_genomes/Human/UCSC/hg38.ncbiRefSeq.bed12 -i RNA_S1Aligned.sortedByCoord.out.bam > ~/FYP/coordinate_sorted_bam/rseqc/infer_experiment/${i%Aligned.sortedByCoord.out.bam}.infer_exp.txt
+done
+
+# Summarizing mapping statistics of a BAM file: bam_stat.py
+nohup sh -c 'for i in *Aligned.sortedByCoord.out.bam; do
+bam_stat.py -i $i > ~/rseqc/${i%Aligned.sortedByCoord.out.bam}.bamstats.txt
+done' &
+
+# Create read_distribution directory within rseqc
+mkdir -p ~/FYP/coordinate_sorted_bam/rseqc/read_distribution
+
+# Calculate how mapped reads were distributed over genome feature (like CDS exon, 5’UTR exon, 3’ UTR exon, Intron, Intergenic regions): read_distribution.py
+nohup sh -c 'for i in *Aligned.sortedByCoord.out.bam; do
+read_distribution.py -i $i -r /media/newdrive/data/Reference_genomes/Human/UCSC/hg38.ncbiRefSeq.bed12 > ~/FYP/coordinate_sorted_bam/rseqc/read_distribution/${i%Aligned.sortedByCoord.out.bam}.read_dist.txt
+done' &
+
+# Create gene_body_coverage directory within rseqc
+mkdir -p ~/FYP/coordinate_sorted_bam/rseqc/gene_body_coverage
+
+# Calculate the RNA-seq reads coverage over gene body: geneBody_coverage.py
+# This checks to see if we are getting even coverage across the full length of the gene, or if there any 3' or 5' bias
+
+# count number of alignments to know what portion of reads to subsample 
+for i in *Aligned.sortedByCoord.out.bam; do
+samtools view -c $i
+done
+
+# subsample a proportion of the aligned reads, to end up with ~200,000
+# use a subset of the reads because it will take too long to run
+# need to adjust this to suit your average number of aligned reads
+for i in *Aligned.sortedByCoord.out.bam; do
+samtools view -s 0.00127952 -o ${i%.bam}_subset.bam $i
+done
+
+# index subsampled bam files, test
+for i in *Aligned.sortedByCoord.out_subset.bam; do
+echo
+echo samtools index $i
+echo
+done
+
+# index subsampled bam files
+for i in *Aligned.sortedByCoord.out_subset.bam; do
+samtools index $i
+done
+
+# count number of alignments in subsampled bam files
+for i in *Aligned.sortedByCoord.out_subset.bam; do
+samtools view -c $i
+done
+
+nohup sh -c 'for i in *Aligned.sortedByCoord.out_subset.bam; do
+geneBody_coverage.py -i $i -r /media/newdrive/data/Reference_genomes/Human/UCSC/hg38.ncbiRefSeq.bed12 -o ~/FYP/coordinate_sorted_bam/rseqc/gene_body_coverage/${i%Aligned.sortedByCoord.out_subset.bam}
+done' &
+
+
+# Run multiqc on the results
+
+cd ~/FYP/coordinate_sorted_bam/rseqc/gene_body_coverage
+multiqc ~/FYP/coordinate_sorted_bam/rseqc/gene_body_coverage -n reseqc_gene_body_coverage_multiqc
+
+cd ~/FYP/coordinate_sorted_bam/rseqc/read_distribution
+multiqc ~/FYP/coordinate_sorted_bam/rseqc/read_distribution -n reseqc_read_distribution_multiqc
+
+cd ~/FYP/coordinate_sorted_bam/rseqc/infer_experiment
+multiqc ~/FYP/coordinate_sorted_bam/rseqc/infer_experiment -n reseqc_infer_experiment_multiqc
