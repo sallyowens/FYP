@@ -1,0 +1,16 @@
+mkdir -p /media/newdrive/GCB2024/sallyowens/FYP/raw_fastq/FastQC
+
+nohup fastqc *.fq.gz --outdir=/media/newdrive/GCB2024/sallyowens/FYP/raw_fastq/FastQC &
+
+multiqc /media/newdrive/GCB2024/sallyowens/FYP/raw_fastq/FastQC
+
+nohup sh -c 'for i in *_1.fq.gz; do
+STAR --genomeDir /media/newdrive/data/Reference_genomes/Human/UCSC/STAR_UCSC_refseq/ --runThreadN 12 --readFilesIn $i ${i%_1.fq.gz}_2.fq.gz --readFilesCommand zcat --outFileNamePrefix ${i%_1.fq.gz} --outSAMtype BAM SortedByCoordinate --outSAMunmapped Within --outSAMattributes Standard
+done' &
+
+mkdir -p ~/FYP/coordinate_sorted_bams
+mv *.out* ~/FYP/coordinate_sorted_bams/
+cd ~/FYP/coordinate_sorted_bams
+multiqc ~/FYP/coordinate_sorted_bams -n STAR_multiqc
+
+samtools view RNA_S1Aligned.sortedByCoord.out.bam | wc -l
