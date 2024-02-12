@@ -1,19 +1,23 @@
 # Make a new directory for the project called FYP and then make directories for the raw fastq files and FASTQC
+# -p: allows for any parent directory to be created if it does not alreay exist
 mkdir -p /media/newdrive/GCB2024/sallyowens/FYP/raw_fastq/FastQC
 
 # Upload fastq files into cyberduck into raw_fastq directory. 
 # Run FASTQC on files
-# nohup & allows command to run in the backround
-# wildcard (*) runs command on all files ending with .fq.gz
-# --ourdir= put the output in the desired directory (FastQC)
+# nohup &: allows command to run in the backround
+# wildcard (*): runs command on all files ending with .fq.gz 
+# --ourdir=: put the output in the desired directory (FastQC)
 nohup fastqc *.fq.gz --outdir=/media/newdrive/GCB2024/sallyowens/FYP/raw_fastq/FastQC &
 
 # run MultiQC on FastQC reports to generate summary report for quality assessment on reads
 multiqc /media/newdrive/GCB2024/sallyowens/FYP/raw_fastq/FastQC
 
-# aligning reads to reference genome using STAR
+# aligning reads to reference genome using STAR, reference genome being used is UCSC hg38
 # Genome indices had already been generated using the following code
 # STAR --runThreadN 32 --runMode genomeGenerate --genomeDir /media/newdrive/data/Reference_genomes/Human/UCSC/STAR --genomeFastaFiles /media/newdrive/data/Reference_genomes/Human/UCSC/hg38.fa --sjdbGTFfile /media/newdrive/data/Reference_genomes/Human/UCSC/hg38.ncbiRefSeq.gtf --sjdbOverhang 149
+# --runThreadN 32: to speed up the process, the tool will utilise 32 threads for the computtion
+# --runMode genomeGenerate: specifie 
+
 
 # this outputs files ending in _1.fq.gz, _2.fq.gz and the file with the same name, to check input files before running alignment 
 for i in *_1.fq.gz; do
