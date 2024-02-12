@@ -145,3 +145,37 @@ multiqc ~/FYP/coordinate_sorted_bam/rseqc/read_distribution -n reseqc_read_distr
 
 cd ~/FYP/coordinate_sorted_bam/rseqc/infer_experiment
 multiqc ~/FYP/coordinate_sorted_bam/rseqc/infer_experiment -n reseqc_infer_experiment_multiqc
+
+cd ~/coordinate_sorted_bam/
+mkdir ~/name_sorted_bam 
+
+# create name-sorted bam file
+# -n sort by name rather than coordinates
+# -@ specify number of threads to use
+# -o name of output file
+for i in *Aligned.sortedByCoord.out.bam; do
+samtools sort -n -@ 12 -o ~/name_sorted_bams/${i%Aligned.sortedByCoord.out.bam}_namesorted.bam $i
+done
+
+cd ~/name_sorted_bam
+mkdir -p ~/FYP/counts
+
+
+# for unstranded libraries
+
+nohup sh -c 'featureCounts -T 12 -p --countReadPairs -C -a /media/newdrive/data/Reference_genomes/Human/UCSC/hg38.ncbiRefSeq.gtf -o ~/FYP/counts/featurecounts.txt *namesorted.bam 2> ~/FYP/counts/featurecounts.screen-output.log' &
+
+# -p specifies paired-end reads
+# --countReadPairs counts fragments instead of reads (only applicable for paired-end reads)
+# -C means do not count read pairs that have their two ends mapping to different chromosomes or mapping to same chromosome but on different strands
+# -a identifies the gene annotation gtf file
+# -o specifies the name (and path) of the output counts file
+# 2 is used to denote Stderr (standard error) output
+
+# Preview the featureCounts.txt file
+# less command makes it easier to see than the head command
+cd ~/FYP/counts
+less -S featurecounts.txt
+
+multiqc ~/FYP/counts1 -n featurecounts_multiqc
+
