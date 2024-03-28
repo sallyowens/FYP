@@ -23,7 +23,7 @@ mkdir -p ~/FYP/script/coordinate_sorted_bams/rseqc/gene_body_coverage
 
 # Calculate the RNA-seq reads coverage over gene body
 # This checks to see if we are getting even coverage across the full length of the gene, or if there any 3' or 5' bias
-for i in *Aligned.sortedByCoord.out_subset.bam; do
+for i in *Aligned.sortedByCoord.out.bam; do
 geneBody_coverage.py -i $i -r /media/newdrive/data/Reference_genomes/Human/UCSC/hg38.ncbiRefSeq.bed12 -o ~/FYP/script/coordinate_sorted_bams/rseqc/gene_body_coverage/${i%Aligned.sortedByCoord.out.bam}
 done
 
