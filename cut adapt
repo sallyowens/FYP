@@ -1,0 +1,14 @@
+for i in *_1.fq; do
+cutadapt -j=1 --output=trimmed_$i --paired-output=trimmed_${i%_1.fq}_2.fq --error-rate=0.1 --times=1 --overlap=3 --action=trim --minimum-length=20 --pair-filter=any --quality-cutoff=20 $i ${i%_1.fq}_2.fq > trimmed_${i%_1.fq}_cutadapt.log
+done
+
+mkdir -p ~/FYP/script/trimmed_fastq_subset/FastQC
+
+mv trimmed* ~/FYP/script/trimmed_fastq_subset
+cd ~/FYP/script/trimmed_fastq_subset
+
+multiqc ~/FYP/script/trimmed_fastq_subset -n cutadapt_multiqc
+
+fastqc *.fq --outdir=/media/newdrive/GCB2024/sallyowens/FYP/script/trimmed_fastq_subset/FastQC
+
+multiqc ~/FYP/script/trimmed_fastq_subset/FastQC -n trimmed_fastqc_multiqc
