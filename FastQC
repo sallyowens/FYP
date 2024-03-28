@@ -1,0 +1,9 @@
+#!/bin/bash
+
+mkdir -p ~/FYP/script/raw_fastq_subset/FastQC
+cd ~/FYP/script/raw_fastq_subset
+
+fastqc *.fq --outdir=/media/newdrive/GCB2024/sallyowens/FYP/script/raw_fastq_subset/FastQC
+
+multiqc /media/newdrive/GCB2024/sallyowens/FYP/script/raw_fastq_subset/FastQC
+
