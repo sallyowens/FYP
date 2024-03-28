@@ -1,0 +1,6 @@
+STAR --genomeDir /media/newdrive/data/Reference_genomes/Human/UCSC/STAR_UCSC_refseq/ --runThreadN 12 --readFilesIn $i ${i%_1.fq}_2.fq --readFilesCommand cat --outFileNamePrefix ${i%_1.fq} --outSAMtype BAM SortedByCoordinate --outSAMunmapped Within --outSAMattributes Standard
+
+mkdir -p ~/FYP/script/coordinate_sorted_bams
+mv *.out* ~/FYP/script/coordinate_sorted_bams/
+cd ~/FYP/script/coordinate_sorted_bams
+multiqc ~/FYP/script/coordinate_sorted_bams -n STAR_multiqc
