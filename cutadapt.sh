@@ -6,7 +6,7 @@
 # --error-rate sets the error tolerance used when searching for adapters (default=0.1)
 # --times specifies the number of times to search for an adapter in a read (default=1)
 # --overlap specifies the minimum overlap in np between the adapter sequence and the read (default=3)
-# --action specifies what to do if an adapter match is found. The default is to trim the adapter and up- or downstream sequence (depending on adapter type)
+# --action specifies what to do if an adapter match is found. 
 # --minimum-length specifies a minimum length of processed reads to be retained, we chose 20
 # --pair-filter determines how to combine the filters for read 1 and read 2 into a single decision about the read pair. 
 
@@ -21,5 +21,5 @@ mv trimmed* ~/FYP/script/trimmed_fastq_subset
 cd ~/FYP/script/trimmed_fastq_subset
 
 # run FastQC and then MultiQC on trimmed read to comapre quality with raw reads
-fastqc *.fq --outdir=/media/newdrive/GCB2024/sallyowens/FYP/script/trimmed_fastq_subset/FastQC
+fastqc *.fq --outdir=~/FYP/script/trimmed_fastq_subset/FastQC
 multiqc ~/FYP/script/trimmed_fastq_subset/FastQC -n trimmed_fastqc_multiqc
