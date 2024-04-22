@@ -1,7 +1,9 @@
 # Bulk RNA-seq Scripts
 
 ## Description
-This project contains scripts designed to streamline a bulk RNA sequecning pipeline for paired-end reads. RNA seqencing is an advancing next generation sequencing technology that provides a comprehensive view of the entire transcriptome for applications such as gene expression profiling, differential gene expression analysis and variant analysis. These scripts aim to simplify the RNA sequencing process making it easy for scientists of all levels to follow.
+This project contains scripts designed to streamline a bulk RNA sequecning pipeline for paired-end reads. 
+RNA seqencing is an advancing next generation sequencing technology that provides a comprehensive view of the entire transcriptome for applications such as gene expression profiling, differential gene expression analysis and variant analysis. 
+These scripts aim to simplify the RNA sequencing process making it easy for scientists of all levels to follow.
 
 ## Table of Contents
 - Installiation
