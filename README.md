@@ -24,7 +24,7 @@ Please use the scripts in the following order
   ## Usage
 To get started with this project, navigate to your terminal and run the scripts in the order outlined in the Installation section for optimal performance.
 
-## Scripts
+## Execution
 1. **Initial FastQC**
 Running this script will first create the directory for the project.
 Of note, fastq files must end in .fq, please adjust code if necessary.
