@@ -12,12 +12,14 @@ for i in *Aligned.sortedByCoord.out.bam; do
 bam_stat.py -i $i > ~/rseqc/${i%Aligned.sortedByCoord.out.bam}.bamstats.txt
 done
 
+
 mkdir -p ~/FYP/script/coordinate_sorted_bams/rseqc/read_distribution
 
 # Calculate how mapped reads were distributed over genome feature
 for i in *Aligned.sortedByCoord.out.bam; do
 read_distribution.py -i $i -r /media/newdrive/data/Reference_genomes/Human/UCSC/hg38.ncbiRefSeq.bed12 > ~/FYP/script/coordinate_sorted_bams/rseqc/read_distribution/${i%Aligned.sortedByCoord.out.bam}.read_dist.txt
 done
+
 
 mkdir -p ~/FYP/script/coordinate_sorted_bams/rseqc/gene_body_coverage
 
@@ -27,12 +29,15 @@ for i in *Aligned.sortedByCoord.out.bam; do
 geneBody_coverage.py -i $i -r /media/newdrive/data/Reference_genomes/Human/UCSC/hg38.ncbiRefSeq.bed12 -o ~/FYP/script/coordinate_sorted_bams/rseqc/gene_body_coverage/${i%Aligned.sortedByCoord.out.bam}
 done
 
+
+
 mkdir -p ~/FYP/script/coordinate_sorted_bams/rseqc/TIN
 
 # Calculate transcript integrity number (TIN) to confirm quality of files
 for i in *Aligned.sortedByCoord.out.bam; do
 tin.py -i $i -r /media/newdrive/data/Reference_genomes/Human/UCSC/hg38.ncbiRefSeq.bed12 > ~/FYP/script/coordinate_sorted_bams/rseqc/TIN/${i%Aligned.sortedByCoord.out.bam}.output
 done
+
 
 # Run multiqc on the results
 
