@@ -41,7 +41,7 @@ After assessing FastQC and MultiQC output, decide if trimming is necessary to re
 
 3. **Alignment with STAR**
 STAR aligner was chosen to map reads to the refernece genome (hg38). This script also includes creating index BAM files.
-Please note your maximum read length and adjust sjdbOverhang accordingly (maximum read length minus 1)
+Please note your maximum read length and adjust sjdbOverhang accordingly (maximum read length minus 1).
 ```bash
    bash STAR.sh
 ```
