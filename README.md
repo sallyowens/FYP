@@ -21,7 +21,7 @@ Please use the scripts in the following order
 - **RSeQC**
 - **faturecounts**
 
-  ## Usage
+## Usage
 To get started with this project, navigate to your terminal and run the scripts in the order outlined in the Installation section for optimal performance.
 
 ## Execution
